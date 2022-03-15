@@ -5,6 +5,7 @@ var router = express.Router();
 // Import the functions you need from the SDKs you need
 import {initializeApp} from "firebase/app";
 import {getDatabase, ref, set,get,child } from  "firebase/database";
+import { async } from '@firebase/util';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -37,23 +38,36 @@ router.post('/register', function (req, res, next) {
 
  return res.status(200).send()
 });
- router.post('/login', function (req, res, next) {
+ router.post('/login', async function (req, res, next) {
  
-    var user = req.body;
+    let user = req.body;
     console.log(user)
-    user.password = bcrypt.hashSync(user.password, 10);
     const dbRef = ref(db);
-get(child(dbRef, 'users/'+user.username)).then((snapshot) => {
+    var auth=true;
+     const value1= await get(child(dbRef, 'users/'+user.username)).then(async(snapshot) => {
   if (snapshot.exists()) {
-    console.log(snapshot.val());
+   // console.log(snapshot.val());
+    const value = snapshot.val();
+    console.log(value)
+   if (!bcrypt.compareSync(user.password, value.password)) {
+      auth=false;
+       }
   } else {
     console.log("No data available");
-    return res.status(401).send()
+    auth=false;
   }
 }).catch((error) => {
   console.error(error);
 });
-   
-   return  res.status(200).send()
+if(auth===true){
+   return res.status(200).json({
+    authenticated: true,
+  });
+}
+  else{
+    return res.status(404).json({
+        authenticated: false,
+      });
+  }
    });
 export default router
