@@ -45,10 +45,31 @@ app.use(function (req, res, next) {
     });
   } as ErrorRequestHandler);
   
-  const PORT = process.env.PORT || '4000';
+  const PORT = process.env.PORT || '3000';
   const NODE_ENV = process.env.NODE_ENV;
   
   httpServer.listen(PORT, function () {
     if (NODE_ENV === 'develop')
       console.log(`Server is listening at http://localhost:${PORT}`);
   });
+
+  //open socket
+  
+io.on('connection', (socket) => {
+    console.log(socket.id + ' connected');
+
+    socket.on('disconnect', () => {
+      console.log(socket.id + 'disconnected');
+
+    });
+    
+    // lắng nghe tạo độ di chuyển và thông báo lại cho các broadcast theo dõi khác trong map
+   socket.on('move', ({ x, y }) => {
+    console.log({x,y});
+    socket.broadcast.emit('move', { x, y });
+  });
+    socket.on('moveEnd', () => {
+    socket.broadcast.emit('moveEnd');
+  });
+  });
+  
