@@ -54,22 +54,46 @@ app.use(function (req, res, next) {
   });
 
   //open socket
-  
+let newPlayer;
+let listPlayer = new Array
+let item = 0;
+
 io.on('connection', (socket) => {
-    console.log(socket.id + ' connected');
+  
+     
+ 
+   console.log(socket.id + ' connected');
+  listPlayer.push(socket.id) 
+    console.log(listPlayer);
 
-    socket.on('disconnect', () => {
-      console.log(socket.id + 'disconnected');
+ //   socket.broadcast.emit('playerId',{playerId : socket.id});
+  // lưu lại Id những player đã ở trong va emit 
+  
+  
+  socket.emit("play", 'hello')
+  
+  console.log('after');
+//   
+//  socket.broadcast.emit('otherPlayer',{listPlayer : listPlayer});
+  
 
-    });
-    
+  
+
+ 
+
     // lắng nghe tạo độ di chuyển và thông báo lại cho các broadcast theo dõi khác trong map
    socket.on('move', ({ x, y }) => {
-    console.log({x,y});
-    socket.broadcast.emit('move', { x, y });
+    console.log({x,y,playerId: socket.id});
+    socket.broadcast.emit('move', { x, y,playerId: socket.id});
   });
     socket.on('moveEnd', () => {
-    socket.broadcast.emit('moveEnd');
-  });
-  });
+    socket.broadcast.emit('moveEnd',{playerId : socket.id});
+  }); 
+  
+  socket.on('disconnect', () => {
+      console.log(socket.id + ' disconnected');
+      listPlayer = listPlayer.filter(x=>x!==socket.id)
+
+    });
+  }); 
   
