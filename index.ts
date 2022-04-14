@@ -57,29 +57,25 @@ app.use(function (req, res, next) {
 let newPlayer;
 let listPlayer = new Array
 let item = 0;
-
+var players={};
 io.on('connection', (socket) => {
   
      
  
    console.log(socket.id + ' connected');
-  listPlayer.push(socket.id) 
-    console.log(listPlayer);
+  
+   // console.log(listPlayer);
 
- //   socket.broadcast.emit('playerId',{playerId : socket.id});
+
   // lưu lại Id những player đã ở trong va emit 
   
+ // players[socket.id] ={playerId: socket.id};
   
-  socket.emit("play", 'hello')
+  socket.emit("play",listPlayer)
+  listPlayer.push(socket.id) 
+  //
+  socket.broadcast.emit('newPlayer',{socketId: socket.id});
   
-  console.log('after');
-//   
-//  socket.broadcast.emit('otherPlayer',{listPlayer : listPlayer});
-  
-
-  
-
- 
 
     // lắng nghe tạo độ di chuyển và thông báo lại cho các broadcast theo dõi khác trong map
    socket.on('move', ({ x, y }) => {
