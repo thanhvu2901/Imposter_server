@@ -54,42 +54,59 @@ app.use(function (req, res, next) {
   });
 
   //open socket
-let newPlayer;
+
 let listPlayer = new Array
-let item = 0;
-var players={};
+let Id = '';
+
+let roominfo = {Id, listPlayer}
+
 io.on('connection', (socket) => {
   
-     
- 
    console.log(socket.id + ' connected');
-  
-   // console.log(listPlayer);
 
+  //  socket.on('newGameCreated',(data)=>{
+  //    console.log(data.gameId);
+  //     listPlayer.push(data.mySocketId) 
+  //     socket.join((data.gameId).toString())
+     
+  //     io.sockets.to(data.gameId.toString()).emit('connectToRoom', "You are in room no. "+data.gameId);
+     
+      
+  //   })
 
-  // lưu lại Id những player đã ở trong va emit 
+   socket.on('joinRoom',(roomId)=>{
+    console.log(roomId);
+    Id = roomId.toString()
+    socket.join((roomId).toString())
+    console.log('joined');
+   // socket.emit('joined')
+    socket.to(roomId.toString()).emit('inroom', "new"+ roomId);
+   //list player trong 1 room
+    socket.emit("play",listPlayer)
+    
+    
+    listPlayer.push(socket.id) 
+  //thông báo có player mới vào
+    socket.to(roomId.toString()).emit('newPlayer',{socketId: socket.id});
   
- // players[socket.id] ={playerId: socket.id};
+  })
   
-  socket.emit("play",listPlayer)
-  listPlayer.push(socket.id) 
-  //
-  socket.broadcast.emit('newPlayer',{socketId: socket.id});
-  
+
+  // lấy những player đã ở trong game + toạ độ
 
     // lắng nghe tạo độ di chuyển và thông báo lại cho các broadcast theo dõi khác trong map
-   socket.on('move', ({ x, y }) => {
+   
+   
+    socket.on('move', ({ x, y }) => {
     console.log({x,y,playerId: socket.id});
-    socket.broadcast.emit('move', { x, y,playerId: socket.id});
+    socket.to(Id).emit('move', { x, y,playerId: socket.id});
   });
     socket.on('moveEnd', () => {
-    socket.broadcast.emit('moveEnd',{playerId : socket.id});
-  }); 
-  
+    socket.to(Id).emit('moveEnd',{playerId : socket.id});
+  });   
   socket.on('disconnect', () => {
       console.log(socket.id + ' disconnected');
       listPlayer = listPlayer.filter(x=>x!==socket.id)
-
     });
   }); 
   
