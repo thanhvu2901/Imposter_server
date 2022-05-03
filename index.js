@@ -28,6 +28,8 @@ const createApp = () => {
       error: 'Endpoint not found',
     });
   });
+
+
 }
 const startListening = () => {
   // start listening (and create a 'server' object representing our server)
@@ -53,11 +55,6 @@ async function bootApp() {
 bootApp();
 
 
-//open socket
-
-let listPlayer = new Array
-let Id = '';
-let posX, posY
 
 
 
