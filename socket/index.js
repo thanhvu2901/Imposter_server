@@ -23,16 +23,6 @@ module.exports = (io) => {
 
         console.log(socket.id + ' connected');
 
-        //  socket.on('newGameCreated',(data)=>{
-        //    console.log(data.gameId);
-        //     listPlayer.push(data.mySocketId) 
-        //     socket.join((data.gameId).toString())
-
-        //     io.sockets.to(data.gameId.toString()).emit('connectToRoom', "You are in room no. "+data.gameId);
-
-
-        //   })
-
         socket.on('joinRoom', (roomkey) => {
 
             socket.join(roomkey)
@@ -44,16 +34,24 @@ module.exports = (io) => {
                 y: 0,
                 role: 0, //0: crew 1: imposter
                 host: false,
-                playerId: socket.id
+                playerId: socket.id,
+                name: ''
             }
+
+            //who is host in room   
             if (Object.keys((roomInfo).players)[0] == socket.id) {
                 Object.values((roomInfo).players)[0].host = true;
             }
-            console.log(roomInfo);
+
+
+
             //  console.log('break');
 
             roomInfo.numPlayers = Object.keys(roomInfo.players).length;
 
+            console.log(roomInfo);
+
+            //in waitingRoom
             socket.emit('setState', roomInfo)
 
             // socket.emit('joined')
@@ -114,10 +112,8 @@ module.exports = (io) => {
 
             let idPlayers = Object.keys((gameRooms[roomId].players))
             //random role
-            // console.log(Object.values((gameRooms[roomId].players))[0].role);
-            //emit role
             let i = 0;
-            if (numPlayers > 3) {
+            if (numPlayers >= 1) {
                 while (i < imposter) {
                     let temp = Math.floor(Math.random() * (numPlayers - 1))
                     if (Object.values((gameRooms[roomId].players))[temp].role == 0) {
@@ -127,11 +123,22 @@ module.exports = (io) => {
                 }
             }
 
-            console.log(gameRooms[roomId]);
+            //emit role 
+            //console.log(gameRooms[roomId]);
 
+            //console.log(playerInfo);
             io.in(roomId).emit('gogame', ({ numPlayers, idPlayers }))
 
         })
+
+        socket.on('whatRole', (roomId) => {
+            //   console.log(Object(gameRooms[roomId]).players);
+            let isRole = (Object(gameRooms[roomId]).players)[socket.id].role
+            // console.log(isRole);
+            io.to(socket.id).emit('roleIs', isRole);
+        })
+
+
 
         socket.on('getRandomRoom', () => {
             let allRoomId = Object.keys(gameRooms);
