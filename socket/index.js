@@ -107,7 +107,7 @@ module.exports = (io) => {
         })
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
-            console.log(roomId);
+            console.log(imposter);
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
             let idPlayers = Object.keys((gameRooms[roomId].players))
@@ -159,6 +159,12 @@ module.exports = (io) => {
         socket.on('moveEnd', (roomId) => {
             socket.broadcast.emit('moveEnd', { playerId: socket.id });
         });
+
+        //kill
+        socket.on('killed', (playerId) => {
+            socket.broadcast.emit('updateOtherPlayer', playerId)
+
+        })
     })
 }
 
