@@ -97,11 +97,29 @@ module.exports = (io) => {
                 players: {
 
                 },
-                numPlayers: 0
+                numPlayers: 0,
+                public: 1
             };
             //console.log(gameRooms);
             socket.emit("roomCreated", key);
         });
+        socket.on("getRoomCodePrivate", async function () {
+            let key = codeGenerator();
+            while (Object.keys(gameRooms).includes(key)) {
+                key = codeGenerator();
+            }
+            gameRooms[key] = {
+                roomKey: key,
+                players: {
+
+                },
+                numPlayers: 0,
+                public: 0
+            };
+            //console.log(gameRooms);
+            socket.emit("roomCreated", key);
+        });
+
         socket.on('ok', () => {
             socket.emit('join')
         })
@@ -125,7 +143,6 @@ module.exports = (io) => {
 
             //emit role 
             //console.log(gameRooms[roomId]);
-
             //console.log(playerInfo);
             io.in(roomId).emit('gogame', ({ numPlayers, idPlayers }))
 
@@ -142,7 +159,15 @@ module.exports = (io) => {
 
         socket.on('getRandomRoom', () => {
             let allRoomId = Object.keys(gameRooms);
-            let random = random_item(allRoomId);
+            //lấy room public
+            let publicRoom = new Array;
+            allRoomId.forEach(item => {
+                if (Object(gameRooms[item]).public == 1) {
+                    publicRoom.push(item)
+                }
+            })
+            //console.log();
+            let random = random_item(publicRoom) ?? '00000';
             io.to(socket.id).emit('randomRoom', (random))
         })
         socket.on('move', ({ x, y, roomId }) => {
