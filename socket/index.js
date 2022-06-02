@@ -171,7 +171,7 @@ module.exports = (io) => {
             io.to(socket.id).emit('randomRoom', (random))
         })
         socket.on('move', ({ x, y, roomId }) => {
-            //    console.log({ x, y, roomId: roomId });
+            //console.log({ x, y, roomId: roomId });
             //find in room and set position
             let id = socket.id
             Object(gameRooms[roomId]).players[id].x = x;
@@ -190,6 +190,15 @@ module.exports = (io) => {
             socket.broadcast.emit('updateOtherPlayer', playerId)
 
         })
+
+        //change skin and send update in new game
+        socket.on('changeSkin', ({ color, id }) => {
+            // let upper = color.toUpperCase()
+            //console.log(upper);
+            socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
+        })
+
+
     })
 }
 
