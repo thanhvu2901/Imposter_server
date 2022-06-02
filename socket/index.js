@@ -35,7 +35,8 @@ module.exports = (io) => {
                 role: 0, //0: crew 1: imposter
                 host: false,
                 playerId: socket.id,
-                name: ''
+                name: '',
+                color: 'blue'
             }
 
             //who is host in room   
@@ -192,9 +193,11 @@ module.exports = (io) => {
         })
 
         //change skin and send update in new game
-        socket.on('changeSkin', ({ color, id }) => {
-            // let upper = color.toUpperCase()
-            //console.log(upper);
+        socket.on('changeSkin', ({ color, id, room }) => {
+
+            //update skin in room
+            (Object(gameRooms[room]).players[id]).color = color
+
             socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
         })
 
