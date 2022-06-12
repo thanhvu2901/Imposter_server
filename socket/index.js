@@ -12,31 +12,50 @@ let gameRooms = [
     //         playerID:
     //         skin:{
     //         }
+
     //     }
     // },
     //     numPlayers: 0
     // }
 ]
+let colorPlayer = [
+    'blue',
+    'red',
+    'blue_dark',
+    'blue_light',
+    'gray_dark',
+    'gray_light',
+    'green_dark',
+    'green_light',
+    'orange',
+    'purple',
+    'yellow',
+    'pink']
 module.exports = (io) => {
 
     io.on('connection', (socket) => {
+
 
         console.log(socket.id + ' connected');
 
         socket.on('joinRoom', (roomkey) => {
 
             socket.join(roomkey)
-            // console.log('joined');
+
 
             const roomInfo = gameRooms[roomkey]
-            roomInfo.players[socket.id] = {
-                x: 0,
-                y: 0,
-                role: 0, //0: crew 1: imposter
-                host: false,
-                playerId: socket.id,
-                name: '',
-                color: 'blue'
+            if (Object.keys(roomInfo.players)[0] !== socket.id) {
+                let randColor = random_item(roomInfo.color)
+                roomInfo.players[socket.id] = {
+                    x: 0,
+                    y: 0,
+                    role: 0, //0: crew 1: imposter
+                    host: false,
+                    playerId: socket.id,
+                    name: '',
+                    color: randColor
+                }
+                roomInfo.color.filter(x => x !== randColor)
             }
 
             //who is host in room   
@@ -46,11 +65,9 @@ module.exports = (io) => {
 
 
 
-            //  console.log('break');
-
             roomInfo.numPlayers = Object.keys(roomInfo.players).length;
 
-            console.log(roomInfo);
+            //  console.log(roomInfo);
 
             //in waitingRoom
             socket.emit('setState', roomInfo)
@@ -58,9 +75,11 @@ module.exports = (io) => {
             // socket.emit('joined')
 
             //list player trong 1 room
+            console.log(roomInfo);
             socket.emit('currentPlayers', {
                 players: roomInfo.players,
-                numPlayers: roomInfo.numPlayers
+                numPlayers: roomInfo.numPlayers,
+                roomInfo: roomInfo
             })
 
             socket.to(roomkey).emit('newPlayer', {
@@ -99,9 +118,21 @@ module.exports = (io) => {
 
                 },
                 numPlayers: 0,
-                public: 1
+                public: 1,
+                color: [
+                    'red',
+                    'blue_dark',
+                    'blue_light',
+                    'gray_dark',
+                    'gray_light',
+                    'green_dark',
+                    'green_light',
+                    'orange',
+                    'purple',
+                    'yellow',
+                    'pink']
             };
-            //console.log(gameRooms);
+
             socket.emit("roomCreated", key);
         });
         socket.on("getRoomCodePrivate", async function () {
@@ -115,14 +146,40 @@ module.exports = (io) => {
 
                 },
                 numPlayers: 0,
-                public: 0
+                public: 0,
+                color: ['blue',
+                    'red',
+                    'blue_dark',
+                    'blue_light',
+                    'gray_dark',
+                    'gray_light',
+                    'green_dark',
+                    'green_light',
+                    'orange',
+                    'purple',
+                    'yellow',
+                    'pink']
             };
-            //console.log(gameRooms);
+
             socket.emit("roomCreated", key);
         });
 
-        socket.on('ok', () => {
+        socket.on('ok', (roomkey) => {
+            console.log('when ok');
+            const roomInfo = gameRooms[roomkey]
+            roomInfo.players[socket.id] = {
+                x: 0,
+                y: 0,
+                role: 0, //0: crew 1: imposter
+                host: false,
+                playerId: socket.id,
+                name: '',
+                color: 'blue'
+            }
+
+            console.log(gameRooms[roomkey]);
             socket.emit('join')
+
         })
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
@@ -141,18 +198,17 @@ module.exports = (io) => {
                     }
                 }
             }
-
+            let Info = gameRooms[roomId]
             //emit role 
-            //console.log(gameRooms[roomId]);
-            //console.log(playerInfo);
-            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers }))
+
+            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers, Info }))
 
         })
 
         socket.on('whatRole', (roomId) => {
-            //   console.log(Object(gameRooms[roomId]).players);
+
             let isRole = (Object(gameRooms[roomId]).players)[socket.id].role
-            // console.log(isRole);
+
             io.to(socket.id).emit('roleIs', isRole);
         })
 
@@ -167,23 +223,33 @@ module.exports = (io) => {
                     publicRoom.push(item)
                 }
             })
-            //console.log();
+
             let random = random_item(publicRoom) ?? '00000';
             io.to(socket.id).emit('randomRoom', (random))
         })
         socket.on('move', ({ x, y, roomId }) => {
-            //console.log({ x, y, roomId: roomId });
+            let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
             //find in room and set position
             let id = socket.id
             Object(gameRooms[roomId]).players[id].x = x;
             Object(gameRooms[roomId]).players[id].y = y;
 
-            //     console.log(gameRooms[roomId]);
 
-            socket.to(roomId).emit('move', { x, y, playerId: socket.id });
+
+            socket.to(roomId).emit('move', { x, y, playerId: socket.id, color: colorP });
         });
-        socket.on('moveEnd', (roomId) => {
-            socket.broadcast.emit('moveEnd', { playerId: socket.id });
+        socket.on('moveEnd', ({ roomId }) => {
+            let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
+            socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
+        });
+        socket.on('moveW', ({ x, y, roomId }) => {
+            let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
+            socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP });
+        });
+        socket.on('moveEndW', ({ roomId }) => {
+            //console.log(Object(gameRooms[roomId]).players[socket.id]);
+            let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
+            socket.broadcast.emit('moveEndW', { playerId: socket.id, color: colorPl });
         });
 
         //kill
