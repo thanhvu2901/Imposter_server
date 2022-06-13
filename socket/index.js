@@ -253,8 +253,10 @@ module.exports = (io) => {
         });
 
         //kill
-        socket.on('killed', (playerId) => {
-            socket.broadcast.emit('updateOtherPlayer', playerId)
+        socket.on('killed', ({ playerId, roomId }) => {
+            // console.log(playerId);
+            let colorKill = (Object(gameRooms[roomId]).players[playerId]).color
+            socket.broadcast.emit('updateOtherPlayer', { playerId: playerId, colorKill: colorKill })
 
         })
 
