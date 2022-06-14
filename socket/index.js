@@ -1,3 +1,5 @@
+const { Socket } = require("socket.io");
+let dead_player = new Map()
 let gameRooms = [
     // roomkey: {
     //     // users: [],
@@ -34,7 +36,7 @@ let colorPlayer = [
 module.exports = (io) => {
 
     io.on('connection', (socket) => {
-
+    
 
         console.log(socket.id + ' connected');
 
@@ -97,7 +99,12 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             console.log(socket.id + ' disconnected');
             //listPlayer = listPlayer.filter(x => x !== socket.id)
+         
         });
+        socket.on("disconnecting", () => {
+             console.log()
+             io.socketsLeave([...socket.rooms][1]);
+          });
 
         //check room 
         socket.on("isKeyValid", function (input) {
@@ -183,6 +190,7 @@ module.exports = (io) => {
         })
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
+            dead_player.set(roomId,[])
             console.log(imposter);
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
@@ -212,7 +220,7 @@ module.exports = (io) => {
             io.to(socket.id).emit('roleIs', isRole);
         })
 
-
+       
 
         socket.on('getRandomRoom', () => {
             let allRoomId = Object.keys(gameRooms);
@@ -255,9 +263,10 @@ module.exports = (io) => {
         //kill
         socket.on('killed', ({ playerId, roomId }) => {
             // console.log(playerId);
+            dead_player.get(roomId).push(playerId)
             let colorKill = (Object(gameRooms[roomId]).players[playerId]).color
             socket.broadcast.emit('updateOtherPlayer', { playerId: playerId, colorKill: colorKill })
-
+            console.log(dead_player)
         })
 
         //change skin and send update in new game
@@ -268,8 +277,20 @@ module.exports = (io) => {
 
             socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
         })
+        socket.on('open_vote',()=>{
+            socket.broadcast.emit('open_othervote')
+        })
+        socket.on('check_dead',(roomId)=>{
+         console.log(roomId)
+            socket.emit('dead_list',dead_player.get(roomId))
 
-
+        })
+        socket.on('vote',(playerId,other_playerId)=>{
+            console.log(playerId)
+            io.emit('vote_otherplayer', other_playerId)
+            io.emit('voter_id', playerId)
+        })
+    
     })
 }
 
