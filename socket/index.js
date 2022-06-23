@@ -293,7 +293,27 @@ module.exports = (io) => {
             io.emit('voter_id', playerId)
         })
 
+        socket.on('vote_end',(status,id)=>{
+            switch (status) {
+                case 1:
+                    console.log("is imposter")
+                    io.emit('vote_final',1,id)
+                    break;
+                case 2:
+                    console.log("is not imposter")
+                    io.emit('vote_final',2,id)
+                    break;
+                case 3:
+                    console.log("skipeed ")
+                    io.emit('vote_final',3,id)
+                     break;
+            
+                default:
+                    break;
+            }
+        })
     })
+      
 }
 //setInterval(refreshRoom(), 50000); // delete room if nothing in
 
