@@ -36,10 +36,10 @@ let colorPlayer = [
 module.exports = (io) => {
 
     io.on('connection', (socket) => {
-    
+
 
         console.log(socket.id + ' connected');
-
+        console.log(gameRooms)
         socket.on('joinRoom', (roomkey) => {
 
             socket.join(roomkey)
@@ -77,7 +77,7 @@ module.exports = (io) => {
             // socket.emit('joined')
 
             //list player trong 1 room
-            console.log(roomInfo);
+            // console.log(roomInfo);
             socket.emit('currentPlayers', {
                 players: roomInfo.players,
                 numPlayers: roomInfo.numPlayers,
@@ -99,12 +99,13 @@ module.exports = (io) => {
         socket.on('disconnect', () => {
             console.log(socket.id + ' disconnected');
             //listPlayer = listPlayer.filter(x => x !== socket.id)
-         
+
         });
         socket.on("disconnecting", () => {
-             console.log()
-             io.socketsLeave([...socket.rooms][1]);
-          });
+            console.log('disconecting')
+
+            io.socketsLeave([...socket.rooms][1]);
+        });
 
         //check room 
         socket.on("isKeyValid", function (input) {
@@ -184,14 +185,14 @@ module.exports = (io) => {
                 color: 'blue'
             }
 
-            console.log(gameRooms[roomkey]);
+            //console.log(gameRooms[roomkey]);
             socket.emit('join')
 
         })
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
-            dead_player.set(roomId,[])
-            console.log(imposter);
+            dead_player.set(roomId, [])
+            // console.log(imposter);
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
             let idPlayers = Object.keys((gameRooms[roomId].players))
@@ -220,7 +221,7 @@ module.exports = (io) => {
             io.to(socket.id).emit('roleIs', isRole);
         })
 
-       
+
 
         socket.on('getRandomRoom', () => {
             let allRoomId = Object.keys(gameRooms);
@@ -249,6 +250,7 @@ module.exports = (io) => {
         socket.on('moveEnd', ({ roomId }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
             socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
+            //  console.log('move End');
         });
         socket.on('moveW', ({ x, y, roomId }) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
@@ -277,22 +279,24 @@ module.exports = (io) => {
 
             socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
         })
-        socket.on('open_vote',()=>{
+        socket.on('open_vote', () => {
             socket.broadcast.emit('open_othervote')
         })
-        socket.on('check_dead',(roomId)=>{
-         console.log(roomId)
-            socket.emit('dead_list',dead_player.get(roomId))
+        socket.on('check_dead', (roomId) => {
+            console.log(roomId)
+            socket.emit('dead_list', dead_player.get(roomId))
 
         })
-        socket.on('vote',(playerId,other_playerId)=>{
+        socket.on('vote', (playerId, other_playerId) => {
             console.log(playerId)
             io.emit('vote_otherplayer', other_playerId)
             io.emit('voter_id', playerId)
         })
-    
+
     })
 }
+//setInterval(refreshRoom(), 50000); // delete room if nothing in
+
 
 function codeGenerator() {
     let code = "";
@@ -306,4 +310,12 @@ function random_item(items) {
 
     return items[Math.floor(Math.random() * items.length)];
 
+}
+function refreshRoom() {
+    for (let i = 0; i < gameRooms.length; i++) {
+        if (gameRooms[i].numPlayers == 1) {
+            delete gameRooms[i];
+        }
+
+    }
 }
