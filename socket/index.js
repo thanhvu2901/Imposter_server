@@ -1,6 +1,16 @@
 const { Socket } = require("socket.io");
 //require('./constant')
 let dead_player = new Map()
+let normal_player = new Map()
+let imposter_player = new Map()
+let map=new Map()
+let test = new Map()
+map.set(1,true)
+map.set(2,true)
+map.set(3,false)
+map.set(4,false)
+map.set(5,true)
+map.set(6,true)
 let gameRooms = [
     // roomkey: {
     //     // users: [],
@@ -34,7 +44,7 @@ const PLAYER_PURPLE = "player_base_purple";
 const PLAYER_YELLOW = "player_base_yellow";
 const PLAYER_PINK = "player_base_pink";
 module.exports = (io) => {
-
+console.log([1,2,3].indexOf(2))
     io.on('connection', (socket) => {
 
 
@@ -192,6 +202,9 @@ module.exports = (io) => {
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
             dead_player.set(roomId, [])
+            normal_player.set(roomId,[])
+            imposter_player.set(roomId,[])
+            test.set(roomId,[-1,false])
             // console.log(imposter);
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
@@ -265,10 +278,15 @@ module.exports = (io) => {
         //kill
         socket.on('killed', ({ playerId, roomId }) => {
             // console.log(playerId);
+            let i = normal_player.get(roomId).indexOf(playerId)
+            //let j = imposter_player.get(roomId).indexOf(playerId)
             dead_player.get(roomId).push(playerId)
+            if(i!=-1){
+                let arr=normal_player.get(roomId).filter(item => item !== playerId)
+                normal_player.set(roomId, arr)
+            }
             let colorKill = (Object(gameRooms[roomId]).players[playerId]).color
             socket.broadcast.emit('updateOtherPlayer', { playerId: playerId, colorKill: colorKill })
-            console.log(dead_player)
         })
 
         //change skin and send update in new game
@@ -312,6 +330,59 @@ module.exports = (io) => {
                     break;
             }
         })
+        socket.on('send_role',(id,role,roomId)=>{
+       //     console.log(id,role,roomId)
+            if(role==1){
+            imposter_player.get(roomId).push(id)
+            }else{
+            normal_player.get(roomId).push(id)
+            }
+        })
+        socket.on('check_',(roomId)=>{
+           // console.log(normal_player.get(roomId),imposter_player.get(roomId))
+            if(imposter_player.get(roomId).length>normal_player.get(roomId).length){
+             //   console.log("imposter win check")
+                test.get(roomId)[0]=1
+            }else  if(imposter_player.get(roomId).length==0){
+             //   console.log("player win check")
+                test.get(roomId)[0]=2
+            }
+        })
+        socket.on("remove",(roomId,id,role)=>{
+            switch (role) {
+                case 1:
+                    let arr=imposter_player.get(roomId).filter(item => item !== id)
+                 
+                    imposter_player.set(roomId, arr)
+                 
+              //      console.log("player died",normal_player.get(roomId))
+                    break;
+                case 2:
+                    let arr_1 = normal_player.get(roomId).filter(item => item !== id)
+                    normal_player.set(roomId, arr_1)
+                    console.log(normal_player.get(roomId))
+                    break;
+            
+                default:
+                    break;
+            }
+        })
+        setInterval(()=>{
+          
+            [...test].forEach(value=>{
+               // console.log(test)
+                if(value[1][0]==1&&value[1][1]==false){
+                    console.log("imposter win")
+                    test.set(value[0],-1,true)
+                    io.emit('end_game',1)
+                }else if(value[1][0]==2&&value[1][1]==false){
+                    console.log("player win")
+                    test.set(value[0],-1,true)
+                    io.emit('end_game',2)
+                }
+            })
+              
+            }, 500)
     })
 
 }
