@@ -1,4 +1,5 @@
 const { Socket } = require("socket.io");
+//require('./constant')
 let dead_player = new Map()
 let gameRooms = [
     // roomkey: {
@@ -20,26 +21,25 @@ let gameRooms = [
     //     numPlayers: 0
     // }
 ]
-let colorPlayer = [
-    'blue',
-    'red',
-    'blue_dark',
-    'blue_light',
-    'gray_dark',
-    'gray_light',
-    'green_dark',
-    'green_light',
-    'orange',
-    'purple',
-    'yellow',
-    'pink']
+const PLAYER_BLUE = "player_base_blue";
+const PLAYER_RED = "player_base_red";
+const PLAYER_BLUE_DARK = "player_base_blue_dark";
+const PLAYER_BLUE_LIGHT = "player_base_blue_light";
+const PLAYER_GRAY_DARK = "player_base_gray_dark";
+const PLAYER_GRAY_LIGHT = "player_base_gray_light";
+const PLAYER_GREEN_DARK = "player_base_green_dark";
+const PLAYER_GREEN_LIGHT = "player_base_green_light";
+const PLAYER_ORANGE = "player_base_orange";
+const PLAYER_PURPLE = "player_base_purple";
+const PLAYER_YELLOW = "player_base_yellow";
+const PLAYER_PINK = "player_base_pink";
 module.exports = (io) => {
 
     io.on('connection', (socket) => {
 
 
         console.log(socket.id + ' connected');
-        console.log(gameRooms)
+
         socket.on('joinRoom', (roomkey) => {
 
             socket.join(roomkey)
@@ -128,17 +128,17 @@ module.exports = (io) => {
                 numPlayers: 0,
                 public: 1,
                 color: [
-                    'red',
-                    'blue_dark',
-                    'blue_light',
-                    'gray_dark',
-                    'gray_light',
-                    'green_dark',
-                    'green_light',
-                    'orange',
-                    'purple',
-                    'yellow',
-                    'pink']
+                    PLAYER_RED,
+                    PLAYER_BLUE_DARK,
+                    PLAYER_BLUE_LIGHT,
+                    PLAYER_GRAY_DARK,
+                    PLAYER_GRAY_LIGHT,
+                    PLAYER_GREEN_DARK,
+                    PLAYER_GREEN_LIGHT,
+                    PLAYER_ORANGE,
+                    PLAYER_PURPLE,
+                    PLAYER_YELLOW,
+                    PLAYER_PINK]
             };
 
             socket.emit("roomCreated", key);
@@ -155,18 +155,18 @@ module.exports = (io) => {
                 },
                 numPlayers: 0,
                 public: 0,
-                color: ['blue',
-                    'red',
-                    'blue_dark',
-                    'blue_light',
-                    'gray_dark',
-                    'gray_light',
-                    'green_dark',
-                    'green_light',
-                    'orange',
-                    'purple',
-                    'yellow',
-                    'pink']
+                color: [
+                    PLAYER_RED,
+                    PLAYER_BLUE_DARK,
+                    PLAYER_BLUE_LIGHT,
+                    PLAYER_GRAY_DARK,
+                    PLAYER_GRAY_LIGHT,
+                    PLAYER_GREEN_DARK,
+                    PLAYER_GREEN_LIGHT,
+                    PLAYER_ORANGE,
+                    PLAYER_PURPLE,
+                    PLAYER_YELLOW,
+                    PLAYER_PINK]
             };
 
             socket.emit("roomCreated", key);
@@ -182,7 +182,7 @@ module.exports = (io) => {
                 host: false,
                 playerId: socket.id,
                 name: '',
-                color: 'blue'
+                color: PLAYER_BLUE
             }
 
             //console.log(gameRooms[roomkey]);
@@ -293,27 +293,27 @@ module.exports = (io) => {
             io.emit('voter_id', playerId)
         })
 
-        socket.on('vote_end',(status,id)=>{
+        socket.on('vote_end', (status, id) => {
             switch (status) {
                 case 1:
                     console.log("is imposter")
-                    io.emit('vote_final',1,id)
+                    io.emit('vote_final', 1, id)
                     break;
                 case 2:
                     console.log("is not imposter")
-                    io.emit('vote_final',2,id)
+                    io.emit('vote_final', 2, id)
                     break;
                 case 3:
                     console.log("skipeed ")
-                    io.emit('vote_final',3,id)
-                     break;
-            
+                    io.emit('vote_final', 3, id)
+                    break;
+
                 default:
                     break;
             }
         })
     })
-      
+
 }
 //setInterval(refreshRoom(), 50000); // delete room if nothing in
 
