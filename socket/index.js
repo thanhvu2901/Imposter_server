@@ -40,10 +40,9 @@ module.exports = (io) => {
 
         console.log(socket.id + ' connected');
 
-        socket.on('joinRoom', (roomkey) => {
+        socket.on('joinRoom', ({ roomkey, name }) => {
 
             socket.join(roomkey)
-
 
             const roomInfo = gameRooms[roomkey]
             if (Object.keys(roomInfo.players)[0] !== socket.id) {
@@ -54,7 +53,7 @@ module.exports = (io) => {
                     role: 0, //0: crew 1: imposter
                     host: false,
                     playerId: socket.id,
-                    name: '',
+                    name: name,
                     color: randColor
                 }
                 roomInfo.color.filter(x => x !== randColor)
@@ -69,9 +68,9 @@ module.exports = (io) => {
 
             roomInfo.numPlayers = Object.keys(roomInfo.players).length;
 
-            //  console.log(roomInfo);
+            console.log(roomInfo);
 
-            //in waitingRoom
+            //in waitingRoo
             socket.emit('setState', roomInfo)
 
             // socket.emit('joined')
@@ -172,20 +171,20 @@ module.exports = (io) => {
             socket.emit("roomCreated", key);
         });
 
-        socket.on('ok', (roomkey) => {
+        socket.on('ok', ({ roomKey, name }) => {
             console.log('when ok');
-            const roomInfo = gameRooms[roomkey]
+            const roomInfo = gameRooms[roomKey]
             roomInfo.players[socket.id] = {
                 x: 0,
                 y: 0,
                 role: 0, //0: crew 1: imposter
                 host: false,
                 playerId: socket.id,
-                name: '',
+                name: name,
                 color: PLAYER_BLUE
             }
 
-            //console.log(gameRooms[roomkey]);
+            // console.log(gameRooms[roomKey]);
             socket.emit('join')
 
         })
