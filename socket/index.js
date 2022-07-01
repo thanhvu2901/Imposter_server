@@ -208,6 +208,12 @@ console.log([1,2,3].indexOf(2))
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
             let idPlayers = Object.keys((gameRooms[roomId].players))
+            let list= Object.values((gameRooms[roomId].players))
+            let namePlayers = []
+         list.forEach(element => {
+            namePlayers.push(element.name)
+         });
+            console.log(namePlayers)
             //random role
             let i = 0;
             if (numPlayers >= 1) {
@@ -222,7 +228,7 @@ console.log([1,2,3].indexOf(2))
             let Info = gameRooms[roomId]
             //emit role 
 
-            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers, Info }))
+            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers,namePlayers, Info }))
 
         })
 
