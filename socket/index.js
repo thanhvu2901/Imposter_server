@@ -114,7 +114,7 @@ console.log([1,2,3].indexOf(2))
         socket.on("disconnecting", () => {
             console.log('disconecting')
 
-            io.socketsLeave([...socket.rooms][1]);
+           // io.socketsLeave([...socket.rooms][1]);
         });
 
         //check room 
@@ -297,33 +297,33 @@ console.log([1,2,3].indexOf(2))
 
             socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
         })
-        socket.on('open_vote', () => {
-            socket.broadcast.emit('open_othervote')
+        socket.on('open_vote', (roomKey) => {
+            io.in(roomKey).emit('open_othervote')
         })
         socket.on('check_dead', (roomId) => {
             console.log(roomId)
             socket.emit('dead_list', dead_player.get(roomId))
 
         })
-        socket.on('vote', (playerId, other_playerId) => {
+        socket.on('vote', (playerId, other_playerId,roomKey) => {
             console.log(playerId)
-            io.emit('vote_otherplayer', other_playerId)
-            io.emit('voter_id', playerId)
+            io.in(roomKey).emit('vote_otherplayer', other_playerId)
+            io.in(roomKey).emit('voter_id', playerId)
         })
 
-        socket.on('vote_end', (status, id) => {
+        socket.on('vote_end', (status, id,roomKey) => {
             switch (status) {
                 case 1:
                     console.log("is imposter")
-                    io.emit('vote_final', 1, id)
+                    io.in(roomKey).emit('vote_final', 1, id)
                     break;
                 case 2:
                     console.log("is not imposter")
-                    io.emit('vote_final', 2, id)
+                    io.in(roomKey).emit('vote_final', 2, id)
                     break;
                 case 3:
                     console.log("skipeed ")
-                    io.emit('vote_final', 3, id)
+                    io.in(roomKey).emit('vote_final', 3, id)
                     break;
 
                 default:
@@ -352,13 +352,16 @@ console.log([1,2,3].indexOf(2))
             switch (role) {
                 case 1:
                     let arr=imposter_player.get(roomId).filter(item => item !== id)
-                 
+                    let colorKill = (Object(gameRooms[roomId]).players[id]).color
+                    io.emit('updateOtherPlayer', { playerId: id, colorKill: colorKill })
                     imposter_player.set(roomId, arr)
                  
               //      console.log("player died",normal_player.get(roomId))
                     break;
                 case 2:
                     let arr_1 = normal_player.get(roomId).filter(item => item !== id)
+                    let colorKill_1 = (Object(gameRooms[roomId]).players[id]).color
+                    io.emit('updateOtherPlayer', { playerId: id, colorKill: colorKill_1 })
                     normal_player.set(roomId, arr_1)
                     console.log(normal_player.get(roomId))
                     break;
@@ -366,6 +369,10 @@ console.log([1,2,3].indexOf(2))
                 default:
                     break;
             }
+        })
+        socket.on("message",(id,name,message,roomKey)=>{
+            console.log(message)
+         io.in(roomKey).emit("send",id,name,message)   
         })
         setInterval(()=>{
           
