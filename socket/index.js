@@ -3,14 +3,14 @@ const { Socket } = require("socket.io");
 let dead_player = new Map()
 let normal_player = new Map()
 let imposter_player = new Map()
-let map=new Map()
+let map = new Map()
 let test = new Map()
-map.set(1,true)
-map.set(2,true)
-map.set(3,false)
-map.set(4,false)
-map.set(5,true)
-map.set(6,true)
+map.set(1, true)
+map.set(2, true)
+map.set(3, false)
+map.set(4, false)
+map.set(5, true)
+map.set(6, true)
 let gameRooms = [
     // roomkey: {
     //     // users: [],
@@ -44,7 +44,7 @@ const PLAYER_PURPLE = "player_base_purple";
 const PLAYER_YELLOW = "player_base_yellow";
 const PLAYER_PINK = "player_base_pink";
 module.exports = (io) => {
-console.log([1,2,3].indexOf(2))
+    console.log([1, 2, 3].indexOf(2))
     io.on('connection', (socket) => {
 
 
@@ -64,7 +64,9 @@ console.log([1,2,3].indexOf(2))
                     host: false,
                     playerId: socket.id,
                     name: name,
-                    color: randColor
+                    color: randColor,
+                    hat: null,
+                    pet: null
                 }
                 roomInfo.color.filter(x => x !== randColor)
             }
@@ -78,7 +80,7 @@ console.log([1,2,3].indexOf(2))
 
             roomInfo.numPlayers = Object.keys(roomInfo.players).length;
 
-            console.log(roomInfo);
+            //   console.log(roomInfo);
 
             //in waitingRoo
             socket.emit('setState', roomInfo)
@@ -113,7 +115,7 @@ console.log([1,2,3].indexOf(2))
         socket.on("disconnecting", () => {
             console.log('disconecting')
 
-           // io.socketsLeave([...socket.rooms][1]);
+            // io.socketsLeave([...socket.rooms][1]);
         });
 
         //check room 
@@ -191,29 +193,31 @@ console.log([1,2,3].indexOf(2))
                 host: false,
                 playerId: socket.id,
                 name: name,
-                color: PLAYER_BLUE
+                color: PLAYER_BLUE,
+                hat: null,
+                pet: null
             }
 
-            // console.log(gameRooms[roomKey]);
+
             socket.emit('join')
 
         })
         //in game
         socket.on('letgo', ({ roomId, imposter, player }) => {
             dead_player.set(roomId, [])
-            normal_player.set(roomId,[])
-            imposter_player.set(roomId,[])
-            test.set(roomId,[-1,false])
-            // console.log(imposter);
+            normal_player.set(roomId, [])
+            imposter_player.set(roomId, [])
+            test.set(roomId, [-1, false])
+
             let numPlayers = Object(gameRooms[roomId]).numPlayers
 
             let idPlayers = Object.keys((gameRooms[roomId].players))
-            let list= Object.values((gameRooms[roomId].players))
+            let list = Object.values((gameRooms[roomId].players))
             let namePlayers = []
-         list.forEach(element => {
-            namePlayers.push(element.name)
-         });
-            console.log(namePlayers)
+            list.forEach(element => {
+                namePlayers.push(element.name)
+            });
+
             //random role
             let i = 0;
             if (numPlayers >= 1) {
@@ -228,7 +232,7 @@ console.log([1,2,3].indexOf(2))
             let Info = gameRooms[roomId]
             //emit role 
 
-            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers,namePlayers, Info }))
+            io.in(roomId).emit('gogame', ({ numPlayers, idPlayers, namePlayers, Info }))
 
         })
 
@@ -268,26 +272,26 @@ console.log([1,2,3].indexOf(2))
         socket.on('moveEnd', ({ roomId }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
             socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
-            //  console.log('move End');
+
         });
         socket.on('moveW', ({ x, y, roomId }) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
             socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP });
         });
         socket.on('moveEndW', ({ roomId }) => {
-            //console.log(Object(gameRooms[roomId]).players[socket.id]);
+
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
             socket.broadcast.emit('moveEndW', { playerId: socket.id, color: colorPl });
         });
 
         //kill
         socket.on('killed', ({ playerId, roomId }) => {
-            // console.log(playerId);
+
             let i = normal_player.get(roomId).indexOf(playerId)
             //let j = imposter_player.get(roomId).indexOf(playerId)
             dead_player.get(roomId).push(playerId)
-            if(i!=-1){
-                let arr=normal_player.get(roomId).filter(item => item !== playerId)
+            if (i != -1) {
+                let arr = normal_player.get(roomId).filter(item => item !== playerId)
                 normal_player.set(roomId, arr)
             }
             let colorKill = (Object(gameRooms[roomId]).players[playerId]).color
@@ -295,28 +299,33 @@ console.log([1,2,3].indexOf(2))
         })
 
         //change skin and send update in new game
-        socket.on('changeSkin', ({ color, id, room }) => {
+        socket.on('changeSkin', ({ color, hat, pet, id, room }) => {
 
             //update skin in room
-            (Object(gameRooms[room]).players[id]).color = color
-
-            socket.broadcast.emit('changeSkin', ({ color: color, id: id }))
+            console.log(color);
+            console.log(pet);
+            //  console.log(pants_skin + "\n" + pants_type);
+            //console.log(pet);
+            (Object(gameRooms[room]).players[id]).color = color;
+            (Object(gameRooms[room]).players[id]).hat = hat ?? null;
+            (Object(gameRooms[room]).players[id]).pet = pet ?? null
+            socket.broadcast.emit('changeSkin', ({ color: color, hat: hat, pet: pet, id: id }))
         })
         socket.on('open_vote', (roomKey) => {
             io.in(roomKey).emit('open_othervote')
         })
         socket.on('check_dead', (roomId) => {
-            console.log(roomId)
+
             socket.emit('dead_list', dead_player.get(roomId))
 
         })
-        socket.on('vote', (playerId, other_playerId,roomKey) => {
+        socket.on('vote', (playerId, other_playerId, roomKey) => {
             console.log(playerId)
             io.in(roomKey).emit('vote_otherplayer', other_playerId)
             io.in(roomKey).emit('voter_id', playerId)
         })
 
-        socket.on('vote_end', (status, id,roomKey) => {
+        socket.on('vote_end', (status, id, roomKey) => {
             switch (status) {
                 case 1:
                     console.log("is imposter")
@@ -335,33 +344,33 @@ console.log([1,2,3].indexOf(2))
                     break;
             }
         })
-        socket.on('send_role',(id,role,roomId)=>{
-       //     console.log(id,role,roomId)
-            if(role==1){
-            imposter_player.get(roomId).push(id)
-            }else{
-            normal_player.get(roomId).push(id)
+        socket.on('send_role', (id, role, roomId) => {
+            //     console.log(id,role,roomId)
+            if (role == 1) {
+                imposter_player.get(roomId).push(id)
+            } else {
+                normal_player.get(roomId).push(id)
             }
         })
-        socket.on('check_',(roomId)=>{
-           // console.log(normal_player.get(roomId),imposter_player.get(roomId))
-            if(imposter_player.get(roomId).length>normal_player.get(roomId).length){
-             //   console.log("imposter win check")
-                test.get(roomId)[0]=1
-            }else  if(imposter_player.get(roomId).length==0){
-             //   console.log("player win check")
-                test.get(roomId)[0]=2
+        socket.on('check_', (roomId) => {
+            // console.log(normal_player.get(roomId),imposter_player.get(roomId))
+            if (imposter_player.get(roomId).length > normal_player.get(roomId).length) {
+                //   console.log("imposter win check")
+                test.get(roomId)[0] = 1
+            } else if (imposter_player.get(roomId).length == 0) {
+                //   console.log("player win check")
+                test.get(roomId)[0] = 2
             }
         })
-        socket.on("remove",(roomId,id,role)=>{
+        socket.on("remove", (roomId, id, role) => {
             switch (role) {
                 case 1:
-                    let arr=imposter_player.get(roomId).filter(item => item !== id)
+                    let arr = imposter_player.get(roomId).filter(item => item !== id)
                     let colorKill = (Object(gameRooms[roomId]).players[id]).color
                     io.emit('updateOtherPlayer', { playerId: id, colorKill: colorKill })
                     imposter_player.set(roomId, arr)
-                 
-              //      console.log("player died",normal_player.get(roomId))
+
+                    //      console.log("player died",normal_player.get(roomId))
                     break;
                 case 2:
                     let arr_1 = normal_player.get(roomId).filter(item => item !== id)
@@ -370,31 +379,31 @@ console.log([1,2,3].indexOf(2))
                     normal_player.set(roomId, arr_1)
                     console.log(normal_player.get(roomId))
                     break;
-            
+
                 default:
                     break;
             }
         })
-        socket.on("message",(id,name,message,roomKey)=>{
+        socket.on("message", (id, name, message, roomKey) => {
             console.log(message)
-         io.in(roomKey).emit("send",id,name,message)   
+            io.in(roomKey).emit("send", id, name, message)
         })
-        setInterval(()=>{
-          
-            [...test].forEach(value=>{
-               // console.log(test)
-                if(value[1][0]==1&&value[1][1]==false){
+        setInterval(() => {
+
+            [...test].forEach(value => {
+                // console.log(test)
+                if (value[1][0] == 1 && value[1][1] == false) {
                     console.log("imposter win")
-                    test.set(value[0],-1,true)
-                    io.emit('end_game',1)
-                }else if(value[1][0]==2&&value[1][1]==false){
+                    test.set(value[0], -1, true)
+                    io.emit('end_game', 1)
+                } else if (value[1][0] == 2 && value[1][1] == false) {
                     console.log("player win")
-                    test.set(value[0],-1,true)
-                    io.emit('end_game',2)
+                    test.set(value[0], -1, true)
+                    io.emit('end_game', 2)
                 }
             })
-              
-            }, 500)
+
+        }, 500)
     })
 
 }
