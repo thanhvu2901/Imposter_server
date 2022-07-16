@@ -3,14 +3,7 @@ const { Socket } = require("socket.io");
 let dead_player = new Map()
 let normal_player = new Map()
 let imposter_player = new Map()
-let map = new Map()
 let test = new Map()
-map.set(1, true)
-map.set(2, true)
-map.set(3, false)
-map.set(4, false)
-map.set(5, true)
-map.set(6, true)
 let gameRooms = [
     // roomkey: {
     //     // users: [],
