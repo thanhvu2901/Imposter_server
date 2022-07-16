@@ -66,7 +66,8 @@ module.exports = (io) => {
                     name: name,
                     color: randColor,
                     hat: null,
-                    pet: null
+                    pet: null,
+                    pants: null
                 }
                 roomInfo.color.filter(x => x !== randColor)
             }
@@ -195,7 +196,8 @@ module.exports = (io) => {
                 name: name,
                 color: PLAYER_BLUE,
                 hat: null,
-                pet: null
+                pet: null,
+                pants: null,
             }
 
 
@@ -299,17 +301,17 @@ module.exports = (io) => {
         })
 
         //change skin and send update in new game
-        socket.on('changeSkin', ({ color, hat, pet, id, room }) => {
+        socket.on('changeSkin', ({ color, hat, pet, pants, id, room }) => {
 
             //update skin in room
-            console.log(color);
-            console.log(pet);
-            //  console.log(pants_skin + "\n" + pants_type);
-            //console.log(pet);
+
+            console.log(pants);
+
             (Object(gameRooms[room]).players[id]).color = color;
             (Object(gameRooms[room]).players[id]).hat = hat ?? null;
-            (Object(gameRooms[room]).players[id]).pet = pet ?? null
-            socket.broadcast.emit('changeSkin', ({ color: color, hat: hat, pet: pet, id: id }))
+            (Object(gameRooms[room]).players[id]).pet = pet ?? null;
+            (Object(gameRooms[room]).players[id]).pants = pants ?? null;
+            socket.broadcast.emit('changeSkin', ({ color: color, hat: hat, pet: pet, pants: pants, id: id }))
         })
         socket.on('open_vote', (roomKey) => {
             io.in(roomKey).emit('open_othervote')
