@@ -37,7 +37,6 @@ const PLAYER_PURPLE = "player_base_purple";
 const PLAYER_YELLOW = "player_base_yellow";
 const PLAYER_PINK = "player_base_pink";
 module.exports = (io) => {
-    console.log([1, 2, 3].indexOf(2))
     io.on('connection', (socket) => {
 
 
@@ -46,7 +45,6 @@ module.exports = (io) => {
         socket.on('joinRoom', ({ roomkey, name }) => {
 
             socket.join(roomkey)
-
             const roomInfo = gameRooms[roomkey]
             if (Object.keys(roomInfo.players)[0] !== socket.id) {
                 let randColor = random_item(roomInfo.color)
@@ -107,9 +105,10 @@ module.exports = (io) => {
 
         });
         socket.on("disconnecting", () => {
-            console.log('disconecting')
+        //    console.log('disconecting room',[...socket.rooms][1])
+        //    console.log(gameRooms)
 
-            // io.socketsLeave([...socket.rooms][1]);
+      
         });
 
         //check room 
@@ -298,7 +297,7 @@ module.exports = (io) => {
 
             //update skin in room
 
-            console.log(pants);
+         //   console.log(pants);
 
             (Object(gameRooms[room]).players[id]).color = color;
             (Object(gameRooms[room]).players[id]).hat = hat ?? null;
@@ -372,7 +371,7 @@ module.exports = (io) => {
                     let colorKill_1 = (Object(gameRooms[roomId]).players[id]).color
                     io.emit('updateOtherPlayer', { playerId: id, colorKill: colorKill_1 })
                     normal_player.set(roomId, arr_1)
-                    console.log(normal_player.get(roomId))
+                  //  console.log(normal_player.get(roomId))
                     break;
 
                 default:
@@ -383,6 +382,10 @@ module.exports = (io) => {
             console.log(message)
             io.in(roomKey).emit("send", id, name, message)
         })
+        socket.on("delete_room",()=>{
+            delete gameRooms[[...socket.rooms][1]]
+            console.log(gameRooms)
+        })
         setInterval(() => {
 
             [...test].forEach(value => {
@@ -391,10 +394,15 @@ module.exports = (io) => {
                     console.log("imposter win")
                     test.set(value[0], -1, true)
                     io.emit('end_game', 1)
+                  //  gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
+                 
                 } else if (value[1][0] == 2 && value[1][1] == false) {
                     console.log("player win")
                     test.set(value[0], -1, true)
                     io.emit('end_game', 2)
+                 
+                 //   gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
+                    
                 }
             })
 
