@@ -105,10 +105,21 @@ module.exports = (io) => {
 
         });
         socket.on("disconnecting", () => {
-        //    console.log('disconecting room',[...socket.rooms][1])
-        //    console.log(gameRooms)
-
-      
+            try {
+                console.log('disconecting room',[...socket.rooms][1])
+                socket.to([...socket.rooms][1]).emit("leave_room",socket.id)
+                 delete gameRooms[[...socket.rooms][1]].players[[...socket.rooms][0]]
+                 gameRooms[[...socket.rooms][1]].numPlayers-=1
+                 console.log(gameRooms[[...socket.rooms][1]])
+                 if(gameRooms[[...socket.rooms][1]].numPlayers==0){
+                     console.log(gameRooms[[...socket.rooms][1]])
+                     delete gameRooms[[...socket.rooms][1]]
+                 }
+            } catch (error) {
+                console.log(error)
+            }
+          
+           
         });
 
         //check room 
@@ -177,7 +188,7 @@ module.exports = (io) => {
         });
 
         socket.on('ok', ({ roomKey, name }) => {
-            console.log('when ok');
+         //   console.log('when ok');
             const roomInfo = gameRooms[roomKey]
             roomInfo.players[socket.id] = {
                 x: 0,
@@ -314,7 +325,7 @@ module.exports = (io) => {
 
         })
         socket.on('vote', (playerId, other_playerId, roomKey) => {
-            console.log(playerId)
+        //    console.log(playerId)
             io.in(roomKey).emit('vote_otherplayer', other_playerId)
             io.in(roomKey).emit('voter_id', playerId)
         })
@@ -379,12 +390,12 @@ module.exports = (io) => {
             }
         })
         socket.on("message", (id, name, message, roomKey) => {
-            console.log(message)
+          //  console.log(message)
             io.in(roomKey).emit("send", id, name, message)
         })
         socket.on("delete_room",()=>{
             delete gameRooms[[...socket.rooms][1]]
-            console.log(gameRooms)
+          //  console.log(gameRooms)
         })
         setInterval(() => {
 
