@@ -36,12 +36,14 @@ const PLAYER_ORANGE = "player_base_orange";
 const PLAYER_PURPLE = "player_base_purple";
 const PLAYER_YELLOW = "player_base_yellow";
 const PLAYER_PINK = "player_base_pink";
+let num_user_finish_task = 0;
+
 module.exports = (io) => {
     io.on('connection', (socket) => {
 
 
         console.log(socket.id + ' connected');
-
+        num_user_finish_task = 0;
         socket.on('joinRoom', ({ roomkey, name }) => {
 
             socket.join(roomkey)
@@ -418,6 +420,18 @@ module.exports = (io) => {
             })
 
         }, 500)
+
+        socket.on("finish_task", () => {
+            // if(total_number_player_finish == total_user) { 
+            //     io.emit('end_game', 2)
+            // }
+            num_user_finish_task += 1
+            io.emit('current_player_finish_task', num_user_finish_task)
+        })
+
+        socket.on('all_player_finish_task', ()=> {
+            io.emit('end_game', 2)
+        })
     })
 
 }
