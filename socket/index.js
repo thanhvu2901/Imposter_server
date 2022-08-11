@@ -276,7 +276,7 @@ module.exports = (io) => {
         });
         socket.on('moveEnd', ({ roomId }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
+            socket.to(roomId).emit('moveEnd', { playerId: socket.id, color: colorPl });
 
         });
         socket.on('moveW', ({ x, y, roomId }) => {
@@ -286,7 +286,7 @@ module.exports = (io) => {
         socket.on('moveEndW', ({ roomId }) => {
 
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.broadcast.emit('moveEndW', { playerId: socket.id, color: colorPl });
+            socket.to(roomId).emit('moveEndW', { playerId: socket.id, color: colorPl });
         });
 
         //kill
