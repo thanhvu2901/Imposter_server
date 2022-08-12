@@ -106,20 +106,20 @@ module.exports = (io) => {
         });
         socket.on("disconnecting", () => {
             try {
-                console.log('disconecting room',[...socket.rooms][1])
-                socket.to([...socket.rooms][1]).emit("leave_room",socket.id)
-                 delete gameRooms[[...socket.rooms][1]].players[[...socket.rooms][0]]
-                 gameRooms[[...socket.rooms][1]].numPlayers-=1
-                 console.log(gameRooms[[...socket.rooms][1]])
-                 if(gameRooms[[...socket.rooms][1]].numPlayers==0){
-                     console.log(gameRooms[[...socket.rooms][1]])
-                     delete gameRooms[[...socket.rooms][1]]
-                 }
+                console.log('disconecting room', [...socket.rooms][1])
+                socket.to([...socket.rooms][1]).emit("leave_room", socket.id)
+                delete gameRooms[[...socket.rooms][1]].players[[...socket.rooms][0]]
+                gameRooms[[...socket.rooms][1]].numPlayers -= 1
+                console.log(gameRooms[[...socket.rooms][1]])
+                if (gameRooms[[...socket.rooms][1]].numPlayers == 0) {
+                    console.log(gameRooms[[...socket.rooms][1]])
+                    delete gameRooms[[...socket.rooms][1]]
+                }
             } catch (error) {
                 console.log(error)
             }
-          
-           
+
+
         });
 
         //check room 
@@ -142,6 +142,7 @@ module.exports = (io) => {
                 },
                 numPlayers: 0,
                 public: 1,
+                finish: 0,
                 color: [
                     PLAYER_RED,
                     PLAYER_BLUE_DARK,
@@ -170,6 +171,7 @@ module.exports = (io) => {
                 },
                 numPlayers: 0,
                 public: 0,
+                finish: 0,
                 color: [
                     PLAYER_RED,
                     PLAYER_BLUE_DARK,
@@ -188,7 +190,7 @@ module.exports = (io) => {
         });
 
         socket.on('ok', ({ roomKey, name }) => {
-         //   console.log('when ok');
+            //   console.log('when ok');
             const roomInfo = gameRooms[roomKey]
             roomInfo.players[socket.id] = {
                 x: 0,
@@ -308,7 +310,7 @@ module.exports = (io) => {
 
             //update skin in room
 
-         //   console.log(pants);
+            //   console.log(pants);
 
             (Object(gameRooms[room]).players[id]).color = color;
             (Object(gameRooms[room]).players[id]).hat = hat ?? null;
@@ -324,8 +326,27 @@ module.exports = (io) => {
             socket.emit('dead_list', dead_player.get(roomId))
 
         })
+
+        socket.on('finish_task', (roomkey) => {
+            // gameRooms[roomkey].finish_task = 1;
+            console.log(roomkey);
+            let finish = Object(gameRooms[roomkey].finish)
+
+            finish = finish + 1
+            console.log(finish)
+            gameRooms[roomkey].finish = finish
+            //console.log(gameRooms[roomkey].finish)
+
+            io.in(roomkey).emit('current_player_finish_task', gameRooms[roomkey].finish)
+
+        }
+        )
+
+
+
+
         socket.on('vote', (playerId, other_playerId, roomKey) => {
-        //    console.log(playerId)
+            //    console.log(playerId)
             io.in(roomKey).emit('vote_otherplayer', other_playerId)
             io.in(roomKey).emit('voter_id', playerId)
         })
@@ -382,7 +403,7 @@ module.exports = (io) => {
                     let colorKill_1 = (Object(gameRooms[roomId]).players[id]).color
                     io.emit('updateOtherPlayer', { playerId: id, colorKill: colorKill_1 })
                     normal_player.set(roomId, arr_1)
-                  //  console.log(normal_player.get(roomId))
+                    //  console.log(normal_player.get(roomId))
                     break;
 
                 default:
@@ -390,13 +411,16 @@ module.exports = (io) => {
             }
         })
         socket.on("message", (id, name, message, roomKey) => {
-          //  console.log(message)
+            //  console.log(message)
             io.in(roomKey).emit("send", id, name, message)
         })
-        socket.on("delete_room",()=>{
+        socket.on("delete_room", () => {
             delete gameRooms[[...socket.rooms][1]]
-          //  console.log(gameRooms)
+            //  console.log(gameRooms)
         })
+
+
+
         setInterval(() => {
 
             [...test].forEach(value => {
@@ -405,15 +429,15 @@ module.exports = (io) => {
                     console.log("imposter win")
                     test.set(value[0], -1, true)
                     io.emit('end_game', 1)
-                  //  gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
-                 
+                    //  gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
+
                 } else if (value[1][0] == 2 && value[1][1] == false) {
                     console.log("player win")
                     test.set(value[0], -1, true)
                     io.emit('end_game', 2)
-                 
-                 //   gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
-                    
+
+                    //   gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
+
                 }
             })
 
