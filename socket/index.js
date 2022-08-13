@@ -382,7 +382,7 @@ module.exports = (io) => {
         })
         socket.on('check_', (roomId) => {
             // console.log(normal_player.get(roomId),imposter_player.get(roomId))
-            if (imposter_player.get(roomId).length > normal_player.get(roomId).length) {
+            if (imposter_player.get(roomId).length == normal_player.get(roomId).length) {
                 //   console.log("imposter win check")
                 test.get(roomId)[0] = 1
             } else if (imposter_player.get(roomId).length == 0) {
@@ -454,6 +454,7 @@ module.exports = (io) => {
         })
 
         socket.on('all_player_finish_task', ()=> {
+            console.log("booo")
             io.emit('end_game', 2)
         })
     })
