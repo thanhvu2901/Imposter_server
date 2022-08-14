@@ -274,21 +274,35 @@ module.exports = (io) => {
             socket.broadcast.emit('move', { x, y, playerId: socket.id, color: colorP });
             Object(gameRooms[roomId]).players[id].x = x;
             Object(gameRooms[roomId]).players[id].y = y;
+            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
+            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
+            let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
 
+
+            socket.to(roomId).emit('move', { x, y, playerId: socket.id, color: colorP,hat,pet,pants  });
         });
-        socket.on('moveEnd', ({ roomId }) => {
+        socket.on('moveEnd', ({ roomId,x,y }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
+            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
+            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
+            let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
+            socket.to(roomId).emit('moveEnd', { playerId: socket.id, color: colorPl,x,y,hat,pet,pants  });
 
         });
         socket.on('moveW', ({ x, y, roomId }) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.broadcast.emit('moveW', { x, y, playerId: socket.id, color: colorP });
+           let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
+        let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
+           let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
+            socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP,hat,pet,pants });
         });
-        socket.on('moveEndW', ({ roomId }) => {
+        socket.on('moveEndW', ({ roomId,x,y }) => {
 
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.broadcast.emit('moveEndW', { playerId: socket.id, color: colorPl });
+            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
+            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
+               let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
+            socket.to(roomId).emit('moveEndW', { playerId: socket.id, color: colorPl ,x,y,hat,pet,pants});
         });
 
         //kill
@@ -380,7 +394,7 @@ module.exports = (io) => {
         })
         socket.on('check_', (roomId) => {
             // console.log(normal_player.get(roomId),imposter_player.get(roomId))
-            if (imposter_player.get(roomId).length > normal_player.get(roomId).length) {
+            if (imposter_player.get(roomId).length+10 == normal_player.get(roomId).length) {
                 //   console.log("imposter win check")
                 test.get(roomId)[0] = 1
             } else if (imposter_player.get(roomId).length == 0) {
