@@ -273,35 +273,24 @@ module.exports = (io) => {
             let id = socket.id
             Object(gameRooms[roomId]).players[id].x = x;
             Object(gameRooms[roomId]).players[id].y = y;
-            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
-            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
-            let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
 
 
-            socket.to(roomId).emit('move', { x, y, playerId: socket.id, color: colorP,hat,pet,pants  });
+
+            socket.to(roomId).emit('move', { x, y, playerId: socket.id, color: colorP });
         });
-        socket.on('moveEnd', ({ roomId,x,y }) => {
+        socket.on('moveEnd', ({ roomId }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
-            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
-            let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
-            socket.to(roomId).emit('moveEnd', { playerId: socket.id, color: colorPl,x,y,hat,pet,pants  });
-        
+            socket.to(roomId).emit('moveEnd', { playerId: socket.id, color: colorPl });
+
         });
         socket.on('moveW', ({ x, y, roomId }) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
-           let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
-        let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
-           let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
-            socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP,hat,pet,pants });
+            socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP });
         });
-        socket.on('moveEndW', ({ roomId,x,y }) => {
+        socket.on('moveEndW', ({ roomId }) => {
 
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            let hat= (Object(gameRooms[roomId]).players[socket.id]).hat
-            let pet=    (Object(gameRooms[roomId]).players[socket.id]).pet
-               let pants =(Object(gameRooms[roomId]).players[socket.id]).pants 
-            socket.to(roomId).emit('moveEndW', { playerId: socket.id, color: colorPl ,x,y,hat,pet,pants});
+            socket.to(roomId).emit('moveEndW', { playerId: socket.id, color: colorPl });
         });
 
         //kill
@@ -393,7 +382,7 @@ module.exports = (io) => {
         })
         socket.on('check_', (roomId) => {
             // console.log(normal_player.get(roomId),imposter_player.get(roomId))
-            if (imposter_player.get(roomId).length >= normal_player.get(roomId).length) {
+            if (imposter_player.get(roomId).length == normal_player.get(roomId).length) {
                 //   console.log("imposter win check")
                 test.get(roomId)[0] = 1
             } else if (imposter_player.get(roomId).length == 0) {
@@ -437,18 +426,17 @@ module.exports = (io) => {
         setInterval(() => {
 
             [...test].forEach(value => {
-                console.log(value)
                 // console.log(test)
                 if (value[1][0] == 1 && value[1][1] == false) {
                     console.log("imposter win")
                     test.set(value[0], -1, true)
-                    io.in(value[0]).emit('end_game', 1)
+                    io.emit('end_game', 1)
                     //  gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
 
                 } else if (value[1][0] == 2 && value[1][1] == false) {
                     console.log("player win")
                     test.set(value[0], -1, true)
-                    io.in(value[0]).emit('end_game', 2)
+                    io.emit('end_game', 2)
 
                     //   gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
 
@@ -466,6 +454,7 @@ module.exports = (io) => {
         })
 
         socket.on('all_player_finish_task', ()=> {
+            console.log("booo")
             io.emit('end_game', 2)
         })
     })
