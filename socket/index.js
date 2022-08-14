@@ -107,19 +107,19 @@ module.exports = (io) => {
 
         });
         socket.on("disconnecting", () => {
-            try {
-                console.log('disconecting room', [...socket.rooms][1])
-                socket.to([...socket.rooms][1]).emit("leave_room", socket.id)
-                delete gameRooms[[...socket.rooms][1]].players[[...socket.rooms][0]]
-                gameRooms[[...socket.rooms][1]].numPlayers -= 1
-                console.log(gameRooms[[...socket.rooms][1]])
-                if (gameRooms[[...socket.rooms][1]].numPlayers == 0) {
-                    console.log(gameRooms[[...socket.rooms][1]])
-                    delete gameRooms[[...socket.rooms][1]]
-                }
-            } catch (error) {
-                console.log(error)
-            }
+            // try {
+            //     console.log('disconecting room', [...socket.rooms][1])
+            //     socket.to([...socket.rooms][1]).emit("leave_room", socket.id)
+            //     delete gameRooms[[...socket.rooms][1]].players[[...socket.rooms][0]]
+            //     gameRooms[[...socket.rooms][1]].numPlayers -= 1
+            //     console.log(gameRooms[[...socket.rooms][1]])
+            //     if (gameRooms[[...socket.rooms][1]].numPlayers == 0) {
+            //         console.log(gameRooms[[...socket.rooms][1]])
+            //         delete gameRooms[[...socket.rooms][1]]
+            //     }
+            // } catch (error) {
+            //     console.log(error)
+            // }
 
 
         });
@@ -453,7 +453,7 @@ module.exports = (io) => {
             io.emit('current_player_finish_task', num_user_finish_task)
         })
 
-        socket.on('all_player_finish_task', ()=> {
+        socket.on('all_player_finish_task', () => {
             console.log("booo")
             io.emit('end_game', 2)
         })
