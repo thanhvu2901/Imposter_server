@@ -271,26 +271,24 @@ module.exports = (io) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
             //find in room and set position
             let id = socket.id
+            socket.broadcast.emit('move', { x, y, playerId: socket.id, color: colorP });
             Object(gameRooms[roomId]).players[id].x = x;
             Object(gameRooms[roomId]).players[id].y = y;
 
-
-
-            socket.to(roomId).emit('move', { x, y, playerId: socket.id, color: colorP });
         });
         socket.on('moveEnd', ({ roomId }) => {
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.to(roomId).emit('moveEnd', { playerId: socket.id, color: colorPl });
+            socket.broadcast.emit('moveEnd', { playerId: socket.id, color: colorPl });
 
         });
         socket.on('moveW', ({ x, y, roomId }) => {
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.to(roomId).emit('moveW', { x, y, playerId: socket.id, color: colorP });
+            socket.broadcast.emit('moveW', { x, y, playerId: socket.id, color: colorP });
         });
         socket.on('moveEndW', ({ roomId }) => {
 
             let colorPl = (Object(gameRooms[roomId]).players[socket.id]).color
-            socket.to(roomId).emit('moveEndW', { playerId: socket.id, color: colorPl });
+            socket.broadcast.emit('moveEndW', { playerId: socket.id, color: colorPl });
         });
 
         //kill
@@ -382,7 +380,7 @@ module.exports = (io) => {
         })
         socket.on('check_', (roomId) => {
             // console.log(normal_player.get(roomId),imposter_player.get(roomId))
-            if (imposter_player.get(roomId).length == normal_player.get(roomId).length) {
+            if (imposter_player.get(roomId).length > normal_player.get(roomId).length) {
                 //   console.log("imposter win check")
                 test.get(roomId)[0] = 1
             } else if (imposter_player.get(roomId).length == 0) {
