@@ -268,6 +268,7 @@ module.exports = (io) => {
             io.to(socket.id).emit('randomRoom', (random))
         })
         socket.on('move', ({ x, y, roomId }) => {
+            console.log("hehe",[...socket.rooms])
             let colorP = (Object(gameRooms[roomId]).players[socket.id]).color
             //find in room and set position
             let id = socket.id
@@ -442,13 +443,13 @@ module.exports = (io) => {
                 if (value[1][0] == 1 && value[1][1] == false) {
                     console.log("imposter win")
                     test.set(value[0], -1, true)
-                    io.emit('end_game', 1)
+                    io.in(value[0]).emit('end_game', 1)
                     //  gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
 
                 } else if (value[1][0] == 2 && value[1][1] == false) {
                     console.log("player win")
                     test.set(value[0], -1, true)
-                    io.emit('end_game', 2)
+                    io.in(value[0]).emit('end_game', 2)
 
                     //   gameRooms = gameRooms.filter(function(el) { return el.roomKey !=[...socket.rooms][1] ; }); 
 
@@ -461,13 +462,14 @@ module.exports = (io) => {
             // if(total_number_player_finish == total_user) { 
             //     io.emit('end_game', 2)
             // }
+            console.log("hehe",[...socket.rooms][1])
             num_user_finish_task += 1
-            io.emit('current_player_finish_task', num_user_finish_task)
+            io.in([...socket.rooms][1]).emit('current_player_finish_task', num_user_finish_task)
         })
 
         socket.on('all_player_finish_task', () => {
             console.log("booo")
-            io.emit('end_game', 2)
+            io.to(socket.id).emit('end_game', 2)
         })
     })
 
