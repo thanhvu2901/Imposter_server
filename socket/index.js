@@ -458,14 +458,14 @@ module.exports = (io) => {
 
         }, 500)
 
-        socket.on("finish_task", () => {
-            // if(total_number_player_finish == total_user) { 
-            //     io.emit('end_game', 2)
-            // }
-            // console.log("hehe", [...socket.rooms][1])
-            num_user_finish_task += 1
-            io.in([...socket.rooms][1]).emit('current_player_finish_task', num_user_finish_task)
-        })
+        // socket.on("finish_task", () => {
+        //     // if(total_number_player_finish == total_user) { 
+        //     //     io.emit('end_game', 2)
+        //     // }
+        //     // console.log("hehe", [...socket.rooms][1])
+        //     num_user_finish_task += 1
+        //     io.in([...socket.rooms][1]).emit('current_player_finish_task', num_user_finish_task)
+        // })
 
         socket.on('all_player_finish_task', () => {
             // console.log("booo")
